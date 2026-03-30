@@ -1,0 +1,76 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user-specific metadata and roles.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique Firebase Auth UID" },
+        "displayName": { "type": "string", "description": "User's display name" },
+        "photoURL": { "type": "string", "description": "URL to user's profile picture" },
+        "role": { "type": "string", "enum": ["admin", "user"], "description": "User's role in the community" }
+      },
+      "required": ["uid", "displayName", "role"]
+    },
+    "ForumCategory": {
+      "title": "Forum Category",
+      "description": "Top-level grouping for forum threads.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Category name" },
+        "description": { "type": "string", "description": "Brief description of the category" },
+        "icon": { "type": "string", "description": "Lucide icon name" },
+        "order": { "type": "number", "description": "Display order" }
+      },
+      "required": ["name", "order"]
+    },
+    "ForumThread": {
+      "title": "Forum Thread",
+      "description": "A discussion thread within a category.",
+      "type": "object",
+      "properties": {
+        "categoryId": { "type": "string", "description": "ID of the parent category" },
+        "title": { "type": "string", "description": "Thread title" },
+        "authorUid": { "type": "string", "description": "UID of the thread creator" },
+        "authorName": { "type": "string", "description": "Display name of the thread creator" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "lastPostAt": { "type": "string", "format": "date-time", "description": "Timestamp of the most recent post" },
+        "postCount": { "type": "number", "description": "Total number of posts in the thread" }
+      },
+      "required": ["categoryId", "title", "authorUid", "createdAt"]
+    },
+    "ForumPost": {
+      "title": "Forum Post",
+      "description": "An individual message within a forum thread.",
+      "type": "object",
+      "properties": {
+        "threadId": { "type": "string", "description": "ID of the parent thread" },
+        "content": { "type": "string", "description": "Post content in markdown" },
+        "authorUid": { "type": "string", "description": "UID of the post author" },
+        "authorName": { "type": "string", "description": "Display name of the post author" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["threadId", "content", "authorUid", "createdAt"]
+    },
+    "WikiArticle": {
+      "title": "Wiki Article",
+      "description": "A structured informational page about Minecraft.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Article title" },
+        "content": { "type": "string", "description": "Article content in markdown" },
+        "category": { "type": "string", "description": "Wiki category (e.g., Blocks, Mobs, Crafting)" },
+        "lastUpdatedBy": { "type": "string", "description": "Name of the last editor" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
+      },
+      "required": ["title", "content", "category", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": { "schema": "UserProfile", "description": "User profiles" },
+    "/forumCategories/{categoryId}": { "schema": "ForumCategory", "description": "Forum categories" },
+    "/forumThreads/{threadId}": { "schema": "ForumThread", "description": "Forum threads" },
+    "/forumPosts/{postId}": { "schema": "ForumPost", "description": "Forum posts" },
+    "/wikiArticles/{articleId}": { "schema": "WikiArticle", "description": "Wiki articles" }
+  }
+}

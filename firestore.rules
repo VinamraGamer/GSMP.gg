@@ -1,0 +1,178 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: uid
+    // Fields:
+    //   - uid: string (required)
+    //   - displayName: string (required, 1-50 chars)
+    //   - photoURL: string (optional, URL)
+    //   - role: string (required, enum: ['admin', 'user'])
+    //
+    // Collection: forumCategories
+    // Document ID: categoryId
+    // Fields:
+    //   - name: string (required, 1-50 chars)
+    //   - description: string (required, 1-200 chars)
+    //   - icon: string (required, 1-50 chars)
+    //   - order: number (required, positive)
+    //
+    // Collection: forumThreads
+    // Document ID: threadId
+    // Fields:
+    //   - categoryId: string (required)
+    //   - title: string (required, 1-100 chars)
+    //   - authorUid: string (required, immutable)
+    //   - authorName: string (required, 1-50 chars)
+    //   - createdAt: timestamp (required, immutable)
+    //   - lastPostAt: timestamp (required)
+    //   - postCount: number (required, positive)
+    //
+    // Collection: forumPosts
+    // Document ID: postId
+    // Fields:
+    //   - threadId: string (required)
+    //   - content: string (required, 1-5000 chars)
+    //   - authorUid: string (required, immutable)
+    //   - authorName: string (required, 1-50 chars)
+    //   - createdAt: timestamp (required, immutable)
+    //
+    // Collection: wikiArticles
+    // Document ID: articleId
+    // Fields:
+    //   - title: string (required, 1-100 chars)
+    //   - content: string (required, 1-10000 chars)
+    //   - category: string (required, 1-50 chars)
+    //   - lastUpdatedBy: string (required, 1-50 chars)
+    //   - updatedAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "ADMIN_EMAIL_HERE" && request.auth.token.email_verified == true)); // Replace ADMIN_EMAIL_HERE with the owner's email for initial admin access
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUrl(url) {
+      return url is string && (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasRequiredFields(['uid', 'displayName', 'role']) &&
+             hasOnlyAllowedFields(['uid', 'displayName', 'photoURL', 'role']) &&
+             data.uid is string && data.uid == request.auth.uid &&
+             data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 50 &&
+             data.role in ['admin', 'user'] &&
+             (!('photoURL' in data) || isValidUrl(data.photoURL));
+    }
+
+    function isValidCategory(data) {
+      return hasRequiredFields(['name', 'description', 'icon', 'order']) &&
+             hasOnlyAllowedFields(['name', 'description', 'icon', 'order']) &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 50 &&
+             data.description is string && data.description.size() >= 1 && data.description.size() <= 200 &&
+             data.icon is string && data.icon.size() >= 1 && data.icon.size() <= 50 &&
+             data.order is number && data.order >= 0;
+    }
+
+    function isValidThread(data) {
+      return hasRequiredFields(['categoryId', 'title', 'authorUid', 'authorName', 'createdAt', 'lastPostAt', 'postCount']) &&
+             hasOnlyAllowedFields(['categoryId', 'title', 'authorUid', 'authorName', 'createdAt', 'lastPostAt', 'postCount']) &&
+             data.categoryId is string &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 100 &&
+             data.authorUid is string && data.authorUid == request.auth.uid &&
+             data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 50 &&
+             data.createdAt is timestamp &&
+             data.lastPostAt is timestamp &&
+             data.postCount is number && data.postCount >= 0;
+    }
+
+    function isValidPost(data) {
+      return hasRequiredFields(['threadId', 'content', 'authorUid', 'authorName', 'createdAt']) &&
+             hasOnlyAllowedFields(['threadId', 'content', 'authorUid', 'authorName', 'createdAt']) &&
+             data.threadId is string &&
+             data.content is string && data.content.size() >= 1 && data.content.size() <= 5000 &&
+             data.authorUid is string && data.authorUid == request.auth.uid &&
+             data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 50 &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidArticle(data) {
+      return hasRequiredFields(['title', 'content', 'category', 'lastUpdatedBy', 'updatedAt']) &&
+             hasOnlyAllowedFields(['title', 'content', 'category', 'lastUpdatedBy', 'updatedAt']) &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 100 &&
+             data.content is string && data.content.size() >= 1 && data.content.size() <= 10000 &&
+             data.category is string && data.category.size() >= 1 && data.category.size() <= 50 &&
+             data.lastUpdatedBy is string && data.lastUpdatedBy.size() >= 1 && data.lastUpdatedBy.size() <= 50 &&
+             data.updatedAt is timestamp;
+    }
+
+    // ===============================================================
+    // Match Rules
+    // ===============================================================
+
+    match /users/{uid} {
+      allow read: if true;
+      allow create: if isOwner(uid) && isValidUser(request.resource.data) && (request.resource.data.role == 'user' || isAdmin());
+      allow update: if isOwner(uid) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /forumCategories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidCategory(request.resource.data);
+    }
+
+    match /forumThreads/{threadId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && isValidThread(request.resource.data);
+      allow update: if (isOwner(resource.data.authorUid) || isAdmin()) && isValidThread(request.resource.data) && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.authorUid == resource.data.authorUid;
+      allow delete: if isOwner(resource.data.authorUid) || isAdmin();
+    }
+
+    match /forumPosts/{postId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && isValidPost(request.resource.data);
+      allow update: if (isOwner(resource.data.authorUid) || isAdmin()) && isValidPost(request.resource.data) && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.authorUid == resource.data.authorUid;
+      allow delete: if isOwner(resource.data.authorUid) || isAdmin();
+    }
+
+    match /wikiArticles/{articleId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidArticle(request.resource.data);
+    }
+  }
+}
