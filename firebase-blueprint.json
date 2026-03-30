@@ -59,11 +59,13 @@
       "properties": {
         "title": { "type": "string", "description": "Article title" },
         "content": { "type": "string", "description": "Article content in markdown" },
-        "category": { "type": "string", "description": "Wiki category (e.g., Blocks, Mobs, Crafting)" },
+        "category": { "type": "string", "description": "Wiki category (e.g., Basics, Mobs, Crafting)" },
+        "isDraft": { "type": "boolean", "description": "Whether the article is a draft" },
+        "authorUid": { "type": "string", "description": "UID of the creator" },
         "lastUpdatedBy": { "type": "string", "description": "Name of the last editor" },
         "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
       },
-      "required": ["title", "content", "category", "updatedAt"]
+      "required": ["title", "content", "category", "isDraft", "updatedAt"]
     }
   },
   "firestore": {

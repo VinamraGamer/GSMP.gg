@@ -79,7 +79,7 @@ export const signIn = async () => {
     const userDoc = await getDoc(userDocRef);
     
     if (!userDoc.exists()) {
-      const isInitialAdmin = user.email === "ADMIN_EMAIL_HERE"; // Replace ADMIN_EMAIL_HERE with the owner's email
+      const isInitialAdmin = user.email === "ADMIN_EMAIL_HERE";
       await setDoc(userDocRef, {
         uid: user.uid,
         displayName: user.displayName || "Anonymous Crafter",

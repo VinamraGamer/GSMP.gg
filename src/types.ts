@@ -40,6 +40,8 @@ export interface WikiArticle {
   title: string;
   content: string;
   category: string;
+  isDraft: boolean;
+  authorUid?: string;
   lastUpdatedBy: string;
   updatedAt: Timestamp;
 }

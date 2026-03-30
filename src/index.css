@@ -1,20 +1,45 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
 @layer base {
   body {
-    @apply bg-[#111] text-gray-200;
+    @apply bg-[#0a0a0a] text-[#e0e0e0] antialiased;
+    background-image: 
+      radial-gradient(circle at 50% 0%, rgba(56, 224, 56, 0.05) 0%, transparent 50%),
+      linear-gradient(to bottom, #0a0a0a 0%, #111 100%);
+    background-attachment: fixed;
   }
 }
 
-.prose h1 { @apply text-4xl font-black tracking-tighter uppercase italic text-white mb-8 border-b border-[#333] pb-4; }
-.prose h2 { @apply text-2xl font-bold text-[#38e038] mt-12 mb-6; }
-.prose p { @apply text-gray-400 leading-relaxed mb-6; }
-.prose ul { @apply list-disc list-inside mb-6 space-y-2 text-gray-400; }
+.gsmp-card-gold {
+  @apply bg-gradient-to-r from-[#f6d365] to-[#fda085] rounded-xl overflow-hidden transition-all duration-300 shadow-lg;
+}
+
+.gsmp-card-dark {
+  @apply bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden transition-all duration-300 shadow-lg;
+}
+
+.gsmp-card-dark:hover {
+  @apply border-[#38e038]/20;
+}
+
+.gsmp-header {
+  @apply bg-gradient-to-b from-[#1a1c23] to-[#111217] border-b border-[#2a2c35] sticky top-0 z-50;
+}
+
+.font-pixel {
+  font-family: 'Press Start 2P', cursive;
+}
+
+.prose h1 { @apply font-display text-4xl font-black tracking-tighter uppercase italic text-white mb-8 border-b border-[#222] pb-4; }
+.prose h2 { @apply font-display text-2xl font-bold text-[#38e038] mt-12 mb-6 uppercase tracking-tight; }
+.prose p { @apply text-[#b0b0b0] leading-relaxed mb-6; }
+.prose ul { @apply list-disc list-inside mb-6 space-y-2 text-[#b0b0b0]; }
 .prose strong { @apply text-white font-bold; }
-.prose code { @apply bg-[#333] px-1.5 py-0.5 rounded text-[#38e038] font-mono text-sm; }
+.prose code { @apply bg-[#222] px-1.5 py-0.5 rounded text-[#38e038] font-mono text-sm border border-[#333]; }
