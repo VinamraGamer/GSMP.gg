@@ -39,9 +39,29 @@ export interface WikiArticle {
   id: string;
   title: string;
   content: string;
-  category: string;
+  category: 'Players' | 'Items' | 'Locations' | 'Events' | 'Guides' | 'Lore';
   isDraft: boolean;
   authorUid?: string;
   lastUpdatedBy: string;
   updatedAt: Timestamp;
+  infoboxData?: Record<string, string>;
+  coordinates?: { x: number; y: number; z: number };
+  imageUrl?: string;
+}
+
+export interface PlayerStats {
+  kills: number;
+  deaths: number;
+  playtime: string;
+  joinDate: Timestamp;
+  skinUrl?: string;
+}
+
+export interface Player {
+  uid: string;
+  username: string;
+  displayName: string;
+  stats: PlayerStats;
+  bio: string;
+  baseLocation?: { x: number; y: number; z: number };
 }
