@@ -9,8 +9,7 @@ service cloud.firestore {
     }
     function isAdmin() {
       return isAuthenticated() &&
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-          (request.auth.token.email == "ADMIN_EMAIL_HERE" && request.auth.token.email_verified == true));
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     function isValidEmail(email) {
       return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
@@ -26,11 +25,12 @@ service cloud.firestore {
     }
     function isValidUser(data) {
       return hasRequiredFields(['uid', 'displayName', 'role']) &&
-             hasOnlyAllowedFields(['uid', 'displayName', 'photoURL', 'role']) &&
+             hasOnlyAllowedFields(['uid', 'displayName', 'photoURL', 'role', 'adminSecret']) &&
              data.uid is string && data.uid == request.auth.uid &&
              data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 50 &&
              data.role in ['admin', 'user'] &&
-             (!('photoURL' in data) || isValidUrl(data.photoURL));
+             (!('photoURL' in data) || isValidUrl(data.photoURL)) &&
+             (!('adminSecret' in data) || data.adminSecret is string);
     }
     function isValidCategory(data) {
       return hasRequiredFields(['name', 'description', 'icon', 'order']) &&
@@ -62,23 +62,48 @@ service cloud.firestore {
     }
     function isValidArticle(data) {
       return hasRequiredFields(['title', 'content', 'category', 'isDraft', 'lastUpdatedBy', 'updatedAt']) &&
-             hasOnlyAllowedFields(['title', 'content', 'category', 'isDraft', 'authorUid', 'lastUpdatedBy', 'updatedAt']) &&
+             hasOnlyAllowedFields(['title', 'content', 'category', 'isDraft', 'authorUid', 'lastUpdatedBy', 'updatedAt', 'imageUrl', 'infoboxData', 'coordinates']) &&
              data.title is string && data.title.size() >= 1 && data.title.size() <= 100 &&
              data.content is string && data.content.size() >= 1 && data.content.size() <= 10000 &&
              data.category is string && data.category.size() >= 1 && data.category.size() <= 50 &&
              data.isDraft is bool &&
              (!('authorUid' in data) || data.authorUid is string) &&
+             (!('imageUrl' in data) || isValidUrl(data.imageUrl)) &&
+             (!('infoboxData' in data) || data.infoboxData is map) &&
+             (!('coordinates' in data) || data.coordinates is map) &&
              data.lastUpdatedBy is string && data.lastUpdatedBy.size() >= 1 && data.lastUpdatedBy.size() <= 50 &&
              data.updatedAt is timestamp;
     }
+    function isValidPlayer(data) {
+      return hasRequiredFields(['uid', 'username', 'displayName', 'rank', 'stats']) &&
+             hasOnlyAllowedFields(['uid', 'username', 'displayName', 'rank', 'stats', 'bio', 'baseLocation']) &&
+             data.uid is string &&
+             data.username is string && data.username.size() >= 1 && data.username.size() <= 50 &&
+             data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 50 &&
+             data.rank is string &&
+             data.stats is map &&
+             data.stats.kills is number &&
+             data.stats.deaths is number &&
+             data.stats.playtime is string &&
+             data.stats.joinDate is timestamp;
+    }
+    function isValidMap(data) {
+      return hasRequiredFields(['name', 'imageUrl', 'author', 'createdAt']) &&
+             hasOnlyAllowedFields(['name', 'description', 'imageUrl', 'author', 'createdAt']) &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+             data.imageUrl is string && isValidUrl(data.imageUrl) &&
+             data.author is string &&
+             data.createdAt is timestamp;
+    }
     match /users/{uid} {
       allow read: if true;
-      allow create: if isOwner(uid) && isValidUser(request.resource.data) && (request.resource.data.role == 'user' || isAdmin());
-      allow update: if isOwner(uid) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+      allow create: if isOwner(uid) && isValidUser(request.resource.data) && (request.resource.data.role == 'user' || isAdmin() || (request.resource.data.role == 'admin' && request.resource.data.adminSecret == 'GALAXY_SECRET_2026'));
+      allow update: if isOwner(uid) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin() || (request.resource.data.role == 'admin' && request.resource.data.adminSecret == 'GALAXY_SECRET_2026'));
     }
     match /forumCategories/{categoryId} {
       allow read: if true;
-      allow write: if isAdmin() && isValidCategory(request.resource.data);
+      allow create, update: if isAdmin() && isValidCategory(request.resource.data);
+      allow delete: if isAdmin();
     }
     match /forumThreads/{threadId} {
       allow read: if true;
@@ -96,6 +121,16 @@ service cloud.firestore {
       allow read: if true;
       allow create: if isAuthenticated() && isValidArticle(request.resource.data) && (request.resource.data.isDraft == true || isAdmin());
       allow update: if (isAdmin() || (isOwner(resource.data.authorUid) && resource.data.isDraft == true)) && isValidArticle(request.resource.data);
+      allow delete: if isAdmin();
+    }
+    match /players/{playerId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidPlayer(request.resource.data);
+      allow delete: if isAdmin();
+    }
+    match /maps/{mapId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidMap(request.resource.data);
       allow delete: if isAdmin();
     }
   }

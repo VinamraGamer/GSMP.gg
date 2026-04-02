@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc, getDocFromServer } from "firebase/firestore";
 import firebaseConfig from "../../firebase-applet-config.json";
 
@@ -79,7 +79,7 @@ export const signIn = async () => {
     const userDoc = await getDoc(userDocRef);
     
     if (!userDoc.exists()) {
-      const isInitialAdmin = user.email === "ADMIN_EMAIL_HERE";
+      const isInitialAdmin = user.email === "rahulhbl2@gmail.com";
       await setDoc(userDocRef, {
         uid: user.uid,
         displayName: user.displayName || "Anonymous Crafter",
@@ -90,6 +90,35 @@ export const signIn = async () => {
     return user;
   } catch (error) {
     console.error("Sign in error:", error);
+    throw error;
+  }
+};
+
+export const signInEmail = async (email: string, pass: string) => {
+  try {
+    const result = await signInWithEmailAndPassword(auth, email, pass);
+    return result.user;
+  } catch (error) {
+    console.error("Email sign in error:", error);
+    throw error;
+  }
+};
+
+export const signUpEmail = async (email: string, pass: string, name: string) => {
+  try {
+    const result = await createUserWithEmailAndPassword(auth, email, pass);
+    const user = result.user;
+    
+    const userDocRef = doc(db, "users", user.uid);
+    await setDoc(userDocRef, {
+      uid: user.uid,
+      displayName: name || "Anonymous Crafter",
+      photoURL: "",
+      role: "user"
+    });
+    return user;
+  } catch (error) {
+    console.error("Email sign up error:", error);
     throw error;
   }
 };

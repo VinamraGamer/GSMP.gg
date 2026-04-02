@@ -53,11 +53,11 @@
 }
 
 .mc-button {
-  @apply bg-slate-800 border border-slate-700 text-white font-display font-semibold text-sm px-6 py-3 rounded-none hover:bg-slate-700 active:scale-95 transition-all inline-flex items-center justify-center;
+  @apply bg-slate-800 border border-slate-700 text-white font-display font-semibold text-sm px-6 py-3 rounded-none hover:bg-slate-700 hover:scale-105 active:scale-95 transition-all inline-flex items-center justify-center;
 }
 
 .mc-button-primary {
-  @apply bg-[var(--mc-green)] text-white border-none hover:bg-[var(--mc-dark-green)] shadow-lg shadow-green-500/10;
+  @apply bg-[var(--mc-green)] text-white border-none hover:bg-[var(--mc-dark-green)] hover:scale-105 shadow-lg shadow-green-500/10;
 }
 
 /* Section Dividers */
@@ -129,7 +129,7 @@
 }
 
 .nav-link {
-  @apply overflow-hidden relative items-center flex min-h-[75px] px-9 text-sm font-medium text-slate-400 transition-all duration-300 gap-1 border-none bg-transparent;
+  @apply overflow-hidden relative items-center flex min-h-[75px] px-9 text-sm font-medium text-slate-400 transition-all duration-300 gap-1 border-none bg-transparent hover:scale-105;
 }
 
 .nav-link:hover {

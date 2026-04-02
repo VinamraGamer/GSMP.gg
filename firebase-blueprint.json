@@ -66,6 +66,50 @@
         "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
       },
       "required": ["title", "content", "category", "isDraft", "updatedAt"]
+    },
+    "Player": {
+      "title": "Player",
+      "description": "Stores player statistics and profile information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique Firebase Auth UID" },
+        "username": { "type": "string", "description": "Minecraft username" },
+        "displayName": { "type": "string", "description": "Display name" },
+        "rank": { "type": "string", "description": "Player rank" },
+        "stats": {
+          "type": "object",
+          "properties": {
+            "kills": { "type": "number" },
+            "deaths": { "type": "number" },
+            "playtime": { "type": "string" },
+            "joinDate": { "type": "string", "format": "date-time" },
+            "skinUrl": { "type": "string" }
+          }
+        },
+        "bio": { "type": "string" },
+        "baseLocation": {
+          "type": "object",
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "z": { "type": "number" }
+          }
+        }
+      },
+      "required": ["uid", "username", "displayName", "rank", "stats"]
+    },
+    "MapInfo": {
+      "title": "Map Info",
+      "description": "Information about community maps.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "author": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "imageUrl", "author", "createdAt"]
     }
   },
   "firestore": {
@@ -73,6 +117,8 @@
     "/forumCategories/{categoryId}": { "schema": "ForumCategory", "description": "Forum categories" },
     "/forumThreads/{threadId}": { "schema": "ForumThread", "description": "Forum threads" },
     "/forumPosts/{postId}": { "schema": "ForumPost", "description": "Forum posts" },
-    "/wikiArticles/{articleId}": { "schema": "WikiArticle", "description": "Wiki articles" }
+    "/wikiArticles/{articleId}": { "schema": "WikiArticle", "description": "Wiki articles" },
+    "/players/{playerId}": { "schema": "Player", "description": "Player stats" },
+    "/maps/{mapId}": { "schema": "MapInfo", "description": "Community maps" }
   }
 }

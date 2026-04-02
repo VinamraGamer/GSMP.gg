@@ -61,7 +61,41 @@ export interface Player {
   uid: string;
   username: string;
   displayName: string;
+  rank: string;
   stats: PlayerStats;
   bio: string;
   baseLocation?: { x: number; y: number; z: number };
+}
+
+export interface MapInfo {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  author: string;
+  createdAt: Timestamp;
+}
+
+export interface NavItem {
+  id: string;
+  name: string;
+  view: string;
+  icon: string;
+  order: number;
+}
+
+export interface ToolItem {
+  id: string;
+  name: string;
+  url?: string;
+  icon: string;
+  order: number;
+  action?: string;
+}
+
+export interface SiteSettings {
+  featuredArticleId: string;
+  featuredImage: string;
+  featuredText: string;
+  wikiCategories: string[];
 }
